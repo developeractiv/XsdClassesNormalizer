@@ -14,8 +14,8 @@ namespace XsdClassesNormalizer
     {
         static void Main(string[] args)
         {
-            string namespaceModels = "STS.Cloud.SDK.Models";
-            string dirOut = @"C:\Users\v.zmeev\source\repos\samples\STS.Cloud.SDK\STS.Cloud.SDK\Models";
+            string namespaceModels = "DocCloudSDK.Models";
+            string dirOut = @"C:\Users\v.zmeev\source\repos\api\DocCloudSuite\DocCloudSDK\Models";
 
             var assmbly = typeof(Program).Assembly;
             var types = assmbly.GetTypes().Where(x => x.GetCustomAttribute<GeneratedCodeAttribute>() != null).ToArray();
@@ -26,7 +26,11 @@ namespace XsdClassesNormalizer
                 var namespaceParts = xmlTypeAttribute.Namespace.Split(':').ToList();
                 namespaceParts.RemoveAt(0);
                 namespaceParts.RemoveAt(0);
+                if (namespaceParts[0] == "Information")
+                    namespaceParts.RemoveAt(0);
                 namespaceParts.RemoveAt(namespaceParts.Count - 1);
+                //if (namespaceParts[namespaceParts.Count - 1] == "ESADout_CU")
+                //    namespaceParts.RemoveAt(namespaceParts.Count - 1);
                 string dir = Path.Combine(dirOut, string.Join("\\", namespaceParts));
 
                 if (!Directory.Exists(dir))
@@ -35,7 +39,7 @@ namespace XsdClassesNormalizer
                 string fileName = Path.Combine(dir, t.Name) + ".cs";
 
                 var sb = new StringBuilder();
-                sb.AppendLine($"namespace {namespaceModels}");
+                sb.AppendLine($"namespace {namespaceModels}.{string.Join(".", namespaceParts)}");
                 sb.AppendLine("{");
                 sb.Append($"\tpublic class {t.Name}");
                 if (t.BaseType != typeof(object))
@@ -44,7 +48,7 @@ namespace XsdClassesNormalizer
                     sb.AppendLine();
                 sb.AppendLine("\t{");
 
-                foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance| BindingFlags.DeclaredOnly))
+                foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                 {
                     string normalTypeName;
                     switch (p.PropertyType.Name)
